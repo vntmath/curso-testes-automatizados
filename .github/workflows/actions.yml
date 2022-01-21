@@ -1,0 +1,45 @@
+name: build-test
+
+on: [push]
+  # pull_request:
+  #   paths-ignore:
+  #     - '**.md'
+  # push:
+  #   branches:
+  #     - main
+  #     - releases/*
+  #   paths-ignore:
+  #     - '**.md'
+
+jobs:
+  build:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest]
+    steps:
+      - uses: actions/checkout@v2
+      - name: Setup node 16
+        uses: actions/setup-node@v2
+        with:
+          node-version: 16.x
+          cache: npm
+      
+      - working-directory: ./Aula 5/client
+        run: npm install
+      - working-directory: ./Aula 5/client
+        run: npm run test
+      - working-directory: ./Aula 5/client
+        run: npm run build
+      - working-directory: ./Aula 5/server
+        run: npm install
+      - working-directory: ./Aula 5/server
+        run: npm run test
+      - uses: actions/checkout@v2
+      - uses: akhileshns/heroku-deploy@v3.12.12
+        with:
+          heroku_api_key: ${{ secrets.HEROKU_API_KEY }}
+          heroku_app_name: "developers-app-puc" #Must be unique in Heroku
+          heroku_email: "flavia.beo@ibm.com"
+        env:
+          HD_APP_BASE: "./Aula 5/server"
